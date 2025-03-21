@@ -18,7 +18,7 @@ pipeline {
             steps {
                 script {
                     // Installer les dépendances du projet avec npm
-                    sh 'npm install'
+                    bat 'npm install'
                 }
             }
         }
@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     // Exécuter les tests unitaires avec npm
-                    sh 'npm test'
+                    bat 'npm test'
                 }
             }
         }
@@ -36,7 +36,7 @@ pipeline {
             steps {
                 script {
                     // Exécuter les tests d'intégration
-                    sh 'npm run test:integration'
+                    bat 'npm run test:integration'
                 }
             }
         }
@@ -45,9 +45,9 @@ pipeline {
             steps {
                 script {
                     // Si tu as une commande de build, ajoute-la ici
-                    sh 'npm run build'
+                    bat 'npm run build'
                     // Déployer sur un environnement de staging (simulé)
-                    sh 'npm run deploy:staging'
+                    bat 'npm run deploy:staging'
                 }
             }
         }
@@ -57,7 +57,7 @@ pipeline {
                 script {
                     // Déployer sur l'environnement de production uniquement si tout est OK
                     // Exécuter uniquement si tous les tests sont réussis
-                    sh 'npm run deploy:production'
+                    bat 'npm run deploy:production'
                 }
             }
         }

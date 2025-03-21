@@ -1,0 +1,137 @@
+import 'react-native-url-polyfill/auto';
+import { createClient } from '@supabase/supabase-js';
+import Constants from 'expo-constants';
+
+const supabaseUrl =
+  Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey =
+  Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase configuration. Please connect to Supabase using the "Connect to Supabase" button.'
+  );
+}
+
+// Affichage de debug pour vérifier que la configuration est chargée
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Anon Key:', supabaseAnonKey);
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export type Tables = {
+  users: {
+    Row: {
+      id: string;
+      email: string | null;
+      username: string | null;
+      weight_goal: number | null;
+      current_weight: number | null;
+      height: number | null;
+      daily_calorie_goal: number | null;
+      created_at: string;
+      updated_at: string;
+    };
+    Insert: {
+      id: string;
+      email?: string | null;
+      username?: string | null;
+      weight_goal?: number | null;
+      current_weight?: number | null;
+      height?: number | null;
+      daily_calorie_goal?: number | null;
+      created_at?: string;
+      updated_at?: string;
+    };
+    Update: {
+      email?: string | null;
+      username?: string | null;
+      weight_goal?: number | null;
+      current_weight?: number | null;
+      height?: number | null;
+      daily_calorie_goal?: number | null;
+      updated_at?: string;
+    };
+  };
+  meals: {
+    Row: {
+      id: string;
+      user_id: string;
+      name: string;
+      calories: number;
+      protein: number | null;
+      carbs: number | null;
+      fat: number | null;
+      meal_type: string;
+      date: string;
+      created_at: string;
+    };
+    Insert: {
+      user_id: string;
+      name: string;
+      calories: number;
+      protein?: number | null;
+      carbs?: number | null;
+      fat?: number | null;
+      meal_type: string;
+      date?: string;
+      created_at?: string;
+    };
+    Update: {
+      name?: string;
+      calories?: number;
+      protein?: number | null;
+      carbs?: number | null;
+      fat?: number | null;
+      meal_type?: string;
+      date?: string;
+    };
+  };
+  exercises: {
+    Row: {
+      id: string;
+      user_id: string;
+      name: string;
+      duration: number;
+      calories_burned: number;
+      exercise_type: string;
+      date: string;
+      created_at: string;
+    };
+    Insert: {
+      user_id: string;
+      name: string;
+      duration: number;
+      calories_burned: number;
+      exercise_type: string;
+      date?: string;
+      created_at?: string;
+    };
+    Update: {
+      name?: string;
+      duration?: number;
+      calories_burned?: number;
+      exercise_type?: string;
+      date?: string;
+    };
+  };
+  weight_logs: {
+    Row: {
+      id: string;
+      user_id: string;
+      weight: number;
+      date: string;
+      created_at: string;
+    };
+    Insert: {
+      user_id: string;
+      weight: number;
+      date?: string;
+      created_at?: string;
+    };
+    Update: {
+      weight?: number;
+      date?: string;
+    };
+  };
+};

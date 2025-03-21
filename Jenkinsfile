@@ -47,7 +47,7 @@ pipeline {
                     // Si tu as une commande de build, ajoute-la ici
                     bat 'npm run build'
                     // Déployer sur un environnement de staging (simulé)
-                    bat 'npm run deploy:staging'
+                    //bat 'npm run deploy:staging'
                 }
             }
         }
@@ -57,7 +57,7 @@ pipeline {
                 script {
                     // Déployer sur l'environnement de production uniquement si tout est OK
                     // Exécuter uniquement si tous les tests sont réussis
-                    bat 'npm run deploy:production'
+                    bat 'npm run dev'
                 }
             }
         }

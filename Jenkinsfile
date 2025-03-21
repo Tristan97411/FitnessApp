@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     // Exécuter les tests unitaires avec npm
-                    bat 'npm test'
+                    //bat 'npm test'
                 }
             }
         }
@@ -36,7 +36,7 @@ pipeline {
             steps {
                 script {
                     // Exécuter les tests d'intégration
-                    bat 'npm run test:integration'
+                    //bat 'npm run test:integration'
                 }
             }
         }

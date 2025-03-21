@@ -10,7 +10,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Cloner le dépôt GitHub à chaque exécution de pipeline
-                git 'https://github.com/Tristan97411/ton-repository.git'
+                git 'https://github.com/Tristan97411/FitnessApp.git'
             }
         }
 

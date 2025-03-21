@@ -32,3 +32,8 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Ignore les fichiers contenant des informations sensibles
+*.env
+*.json
+*.secret

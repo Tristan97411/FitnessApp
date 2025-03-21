@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    environment {
+        NODE_HOME = '/usr/local/bin/node' // Path to Node.js, change if needed
+        PATH = "${NODE_HOME}/bin:${env.PATH}"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                // Cloner le dépôt GitHub à chaque exécution de pipeline
+                git 'https://github.com/Tristan97411/ton-repository.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Installer les dépendances du projet avec npm
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                script {
+                    // Exécuter les tests unitaires avec npm
+                    sh 'npm test'
+                }
+            }
+        }
+
+        stage('Integration Tests') {
+            steps {
+                script {
+                    // Exécuter les tests d'intégration
+                    sh 'npm run test:integration'
+                }
+            }
+        }
+
+        stage('Build and Deploy to Staging') {
+            steps {
+                script {
+                    // Si tu as une commande de build, ajoute-la ici
+                    sh 'npm run build'
+                    // Déployer sur un environnement de staging (simulé)
+                    sh 'npm run deploy:staging'
+                }
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                script {
+                    // Déployer sur l'environnement de production uniquement si tout est OK
+                    // Exécuter uniquement si tous les tests sont réussis
+                    sh 'npm run deploy:production'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            // Envoi de notification ou rapport si le build est réussi
+            echo 'Build réussi et déploiement effectué'
+        }
+        failure {
+            // Envoi de notification ou rapport en cas d'échec
+            echo 'Le build a échoué'
+        }
+    }
+}

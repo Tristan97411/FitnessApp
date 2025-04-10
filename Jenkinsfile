@@ -60,22 +60,22 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Build réussi et déploiement effectué'
-            emailext(
-                subject: "✅ Build réussi : ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Le pipeline Jenkins s'est terminé avec succès.\n\nProjet : ${env.JOB_NAME}\nBuild : #${env.BUILD_NUMBER}\nVoir les détails : ${env.BUILD_URL}",
-                to: 'saito97411@hotmail.fr'
-            )
-        }
-
-        failure {
-            echo 'Le build a échoué'
-            emailext(
-                subject: "❌ Échec du build : ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Le pipeline Jenkins a échoué.\n\nProjet : ${env.JOB_NAME}\nBuild : #${env.BUILD_NUMBER}\nVoir les détails : ${env.BUILD_URL}",
-                to: 'saito97411@hotmail.fr'
-            )
-        }
+    success {
+        emailext(
+            subject: '✅ Build réussi - ${JOB_NAME} #${BUILD_NUMBER}',
+            body: "Le build du job ${JOB_NAME} #${BUILD_NUMBER} a réussi.\n\nVoir les détails ici : ${BUILD_URL}",
+            recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+            to: 'saito97411@gmail.com'
+        )
     }
+    failure {
+        emailext(
+            subject: '❌ Build échoué - ${JOB_NAME} #${BUILD_NUMBER}',
+            body: "Le build du job ${JOB_NAME} #${BUILD_NUMBER} a échoué.\n\nVoir les logs ici : ${BUILD_URL}",
+            recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+            to: 'saito97411@gmail.com'
+        )
+    }
+    }
+
 }

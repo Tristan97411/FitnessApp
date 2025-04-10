@@ -23,33 +23,30 @@ pipeline {
             }
         }
 
-        //stage('Run Tests') {
-            //steps {
-                //script {
-                    // Exécuter les tests unitaires avec npm
-                    //bat 'npm test'
-                //}
-           // }
-        //}
+        stage('Run Tests') {
+            steps {
+                script {
+                     Exécuter les tests unitaires avec npm
+                    bat 'npm test'
+                    }
+            }
+        }
 
         //stage('Integration Tests') {
             //steps {
                 //cript {
                     // Exécuter les tests d'intégration
                     //bat 'npm run test:integration'
-                //}
-            //}
-        //}
 
-        stage('Build and Deploy to Staging') {
-            steps {
+        //stage('Build and Deploy to Staging') {
+            //steps {
                 
                     // Si tu as une commande de build, ajoute-la ici
-                    bat 'npm run build'
+                    //bat 'npm run build'
                     // Déployer sur un environnement de staging (simulé)
                     //bat 'npm run deploy:staging'
-            }
-        }
+            //}
+        //}
 
         stage('Deploy to Production') {
             steps {

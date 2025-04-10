@@ -26,8 +26,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                     Exécuter les tests unitaires avec npm
-                    bat 'npm test'
+                    // Exécuter les tests unitaires avec npm
+                    bat 'npm test -- --no-cache'
                     }
             }
         }

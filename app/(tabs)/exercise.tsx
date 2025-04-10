@@ -7,7 +7,7 @@ export default function ExerciseScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Exercise</Text>
+          <Text style={styles.headerTitle}>Exercises</Text>
         </View>
 
         <View style={styles.summary}>

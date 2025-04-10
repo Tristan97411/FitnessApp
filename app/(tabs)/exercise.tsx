@@ -16,7 +16,7 @@ export default function ExerciseScreen() {
             <Text style={styles.summaryLabel}>Calories Burned</Text>
           </View>
           <View style={styles.summaryItem}>
-            <Text style={styles.summaryValue}>40</Text>
+            <Text style={styles.summaryValue}>50</Text>
             <Text style={styles.summaryLabel}>Minutes Active</Text>
           </View>
           <View style={styles.summaryItem}>

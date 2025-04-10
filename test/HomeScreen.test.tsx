@@ -25,7 +25,7 @@ jest.mock('@/lib/supabase', () => ({
 
 describe('HomeScreen', () => {
   it('should display nutrition data correctly', async () => {
-    jest.setTimeout(10000); // 10 secondes
+    jest.setTimeout(15000); // 15 secondes pour Jenkins
 
     render(
       <NavigationContainer>
@@ -33,10 +33,13 @@ describe('HomeScreen', () => {
       </NavigationContainer>
     );
 
-    // Attendre que les données nutritionnelles soient chargées et affichées
-    await waitFor(() => screen.getByText('Calories Consommées'));
+    // Attendre que l'élément 'Calories Consommées' soit rendu
+    const caloriesText = await screen.findByText('Calories Consommées');
+    expect(caloriesText).toBeTruthy();
 
-    // Vérifier que les valeurs totales sont affichées correctement
-    await waitFor(() => expect(screen.getByText('0 cal')).toBeTruthy());  // Vérifier la somme correcte des calories
+    // Attendre et vérifier que les calories totales sont affichées correctement
+    const caloriesValue = await screen.findByText('0 cal');
+    expect(caloriesValue).toBeTruthy();
   });
 });
+

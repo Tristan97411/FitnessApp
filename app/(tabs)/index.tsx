@@ -4,6 +4,8 @@ import { format } from 'date-fns';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '@/lib/supabase';
+import { startOfDay, endOfDay } from 'date-fns';
+
 
 export default function HomeScreen() {
   const today = format(new Date(), 'EEEE, MMMM d');
@@ -19,28 +21,34 @@ export default function HomeScreen() {
     useCallback(() => {
       const fetchMealsData = async () => {
         try {
-          // Récupérer l'utilisateur
+          // Vérification de l'utilisateur
           const { data: { user }, error: authError } = await supabase.auth.getUser();
           if (authError || !user) {
             console.error('Utilisateur non connecté');
             return;
           }
-
-          // Récupérer les repas de l'utilisateur
+      
+          // Si l'utilisateur est connecté, récupérer les repas
           const { data, error: mealsError } = await supabase
             .from('meals')
             .select('calories, protein, carbs, fat')
             .eq('user_id', user.id);
-
+      
           if (mealsError) {
-            console.error(mealsError);
+            console.error('Erreur dans la récupération des repas:', mealsError);
             return;
           }
-
-          // Calculer les totaux des repas
+      
+          // Si pas de données ou erreur dans la réponse, on retourne
+          if (!data || data.length === 0) {
+            console.error('Aucun repas trouvé pour cet utilisateur.');
+            return;
+          }
+      
+          // Calcul des totaux
           const totals = data.reduce(
             (acc, meal) => {
-              acc.totalCalories += meal.calories;
+              acc.totalCalories += meal.calories || 0;
               acc.totalCarbs += meal.carbs || 0;
               acc.totalProtein += meal.protein || 0;
               acc.totalFat += meal.fat || 0;
@@ -48,12 +56,13 @@ export default function HomeScreen() {
             },
             { totalCalories: 0, totalCarbs: 0, totalProtein: 0, totalFat: 0 }
           );
-          
+      
           setNutritionData(totals);
         } catch (err) {
-          console.error('Erreur de récupération des repas', err);
+          console.error('Erreur lors de la récupération des repas', err);
         }
       };
+      
 
       fetchMealsData();
     }, [])

@@ -151,7 +151,7 @@ export default function AddScreen() {
               ]}
               onPress={() => setMealType('snack')}
             >
-              <Text style={styles.mealTypeText}>Collation</Text>
+              <Text style={styles.mealTypeText}>La Collation</Text>
             </Pressable>
           </View>
           <Pressable style={styles.saveButton} onPress={handleAddMeal}>

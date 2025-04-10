@@ -61,12 +61,21 @@ pipeline {
 
     post {
         success {
-            // Envoi de notification ou rapport si le build est réussi
             echo 'Build réussi et déploiement effectué'
+            emailext(
+                subject: "✅ Build réussi : ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Le pipeline Jenkins s'est terminé avec succès.\n\nProjet : ${env.JOB_NAME}\nBuild : #${env.BUILD_NUMBER}\nVoir les détails : ${env.BUILD_URL}",
+                to: 'saito97411@hotmail.fr'
+            )
         }
+
         failure {
-            // Envoi de notification ou rapport en cas d'échec
             echo 'Le build a échoué'
+            emailext(
+                subject: "❌ Échec du build : ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Le pipeline Jenkins a échoué.\n\nProjet : ${env.JOB_NAME}\nBuild : #${env.BUILD_NUMBER}\nVoir les détails : ${env.BUILD_URL}",
+                to: 'saito97411@hotmail.fr'
+            )
         }
     }
 }

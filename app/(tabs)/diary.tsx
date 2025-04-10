@@ -133,7 +133,7 @@ export default function DiaryScreen() {
 
         {/* Total des calories du jour */}
         <View style={styles.totalCaloriesContainer}>
-          <Text style={styles.totalCaloriesText}>Total du jour : {totalCaloriesToday} cal</Text>
+          <Text style={styles.totalCaloriesText}>Total du jours : {totalCaloriesToday} cal</Text>
         </View>
 
         {mealTypes.map((type) => {

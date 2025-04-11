@@ -5,6 +5,10 @@ import { Search, Barcode } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/app/_layout';
 import { router } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Platform } from 'react-native';
+import { format } from 'date-fns';
+
 
 type Meal = {
   id: string;
@@ -16,6 +20,9 @@ type Meal = {
 };
 
 export default function AddScreen() {
+  const [mealDate, setMealDate] = useState(new Date());
+const [showDatePicker, setShowDatePicker] = useState(false);
+
   const { session } = useAuthStore();
   const [mealName, setMealName] = useState('');
   const [mealCalories, setMealCalories] = useState('');
@@ -25,6 +32,13 @@ export default function AddScreen() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const handleDateChange = (event: any, selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setMealDate(selectedDate);
+    }
+    setShowDatePicker(false);
+  };
+  
   // Récupère l'historique des repas ajoutés par l'utilisateur
   const fetchHistory = async () => {
     try {
@@ -60,7 +74,7 @@ export default function AddScreen() {
         name: mealName,
         calories: parseFloat(mealCalories),
         meal_type: mealType,
-        created_at: new Date().toISOString(), // Ajout de la date
+        created_at: mealDate.toISOString(),
       });
       if (error) throw error;
       
@@ -154,6 +168,18 @@ export default function AddScreen() {
               <Text style={styles.mealTypeText}>La Collation</Text>
             </Pressable>
           </View>
+          <Pressable onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
+  <Text style={styles.datePickerText}>Date : {format(mealDate, 'dd/MM/yyyy')}</Text>
+</Pressable>
+{showDatePicker && (
+  <DateTimePicker
+    value={mealDate}
+    mode="date"
+    display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+    onChange={handleDateChange}
+  />
+)}
+
           <Pressable style={styles.saveButton} onPress={handleAddMeal}>
             <Text style={styles.saveButtonText}>Enregistrer le repas</Text>
           </Pressable>
@@ -168,8 +194,9 @@ export default function AddScreen() {
             <View key={meal.id} style={styles.historyItem}>
               <Text style={styles.historyName}>{meal.name}</Text>
               <Text style={styles.historyDetails}>
-                {meal.calories} cal - {meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1)}
-              </Text>
+  {meal.calories} cal - {meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1)} - {format(new Date(meal.created_at), 'dd/MM/yyyy')}
+</Text>
+
             </View>
           ))}
           {history.length === 0 && <Text style={styles.noHistory}>Aucun repas ajouté pour le moment.</Text>}
@@ -245,4 +272,16 @@ const styles = StyleSheet.create({
   historyDetails: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#8E8E93' },
   noHistory: { fontFamily: 'Inter_400Regular', fontSize: 16, color: '#8E8E93', textAlign: 'center' },
   error: { color: '#FF3B30', textAlign: 'center', marginTop: 10 },
+  datePickerButton: {
+    backgroundColor: '#F2F2F7',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  datePickerText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 16,
+    color: '#1C1C1E',
+  },
+  
 });

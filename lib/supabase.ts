@@ -16,6 +16,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Affichage de debug pour vérifier que la configuration est chargée
 console.log('Supabase URL:', supabaseUrl);
 console.log('Supabase Anon Key:', supabaseAnonKey);
+console.log('Supabase URL:', supabaseUrl)
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

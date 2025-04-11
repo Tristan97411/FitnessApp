@@ -4,41 +4,44 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Barcode } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/app/_layout';
-import { router } from 'expo-router';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { useRouter } from 'expo-router'; // Utilisation correcte de useRouter
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Platform } from 'react-native';
 import { format } from 'date-fns';
-
+import { useLocalSearchParams } from 'expo-router'; // Gestion des paramètres
 
 type Meal = {
   id: string;
   user_id: string;
   name: string;
   calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
   meal_type: string;
   created_at: string;
 };
 
+
 export default function AddScreen() {
   const [mealDate, setMealDate] = useState(new Date());
-const [showDatePicker, setShowDatePicker] = useState(false);
+  const params = useLocalSearchParams(); // Paramètres de l'URL
 
   const { session } = useAuthStore();
   const [mealName, setMealName] = useState('');
   const [mealCalories, setMealCalories] = useState('');
-  const [mealType, setMealType] = useState('breakfast'); // type par défaut
+  const [mealProtein, setMealProtein] = useState('');
+  const [mealCarbs, setMealCarbs] = useState('');
+  const [mealFat, setMealFat] = useState('');
+
+  const [mealType, setMealType] = useState('breakfast'); // Type par défaut
   const [history, setHistory] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleDateChange = (event: any, selectedDate: Date | undefined) => {
-    if (selectedDate) {
-      setMealDate(selectedDate);
-    }
-    setShowDatePicker(false);
-  };
-  
+  const router = useRouter(); // Initialisation du router pour la navigation
+
   // Récupère l'historique des repas ajoutés par l'utilisateur
   const fetchHistory = async () => {
     try {
@@ -58,9 +61,28 @@ const [showDatePicker, setShowDatePicker] = useState(false);
     }
   };
 
+  // Pré-remplir les champs du formulaire si des paramètres sont passés (via le scanner)
+  useEffect(() => {
+    if (params.name) setMealName(params.name as string);
+    if (params.calories) setMealCalories(params.calories as string);
+    if (params.protein) setMealProtein(params.protein as string);
+    if (params.carbs) setMealCarbs(params.carbs as string);
+    if (params.fat) setMealFat(params.fat as string);
+  }, [params]);
+
   useEffect(() => {
     fetchHistory();
   }, []);
+
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+const showDatePicker = () => setDatePickerVisibility(true);
+const hideDatePicker = () => setDatePickerVisibility(false);
+const handleConfirm = (date: Date) => {
+  setMealDate(date);
+  hideDatePicker();
+};
+
 
   const handleAddMeal = async () => {
     if (!mealName || !mealCalories) {
@@ -73,6 +95,9 @@ const [showDatePicker, setShowDatePicker] = useState(false);
         user_id: session?.user.id,
         name: mealName,
         calories: parseFloat(mealCalories),
+        protein: parseFloat(mealProtein),
+        carbs: parseFloat(mealCarbs),
+        fat: parseFloat(mealFat),
         meal_type: mealType,
         created_at: mealDate.toISOString(),
       });
@@ -80,6 +105,10 @@ const [showDatePicker, setShowDatePicker] = useState(false);
       
       setMealName('');
       setMealCalories('');
+      setMealProtein('');
+      setMealCarbs('');
+      setMealFat('');
+      
       fetchHistory(); // Met à jour l'historique des repas
       router.push('/diary'); // Redirige vers le journal après l'ajout
     } catch (err) {
@@ -88,7 +117,6 @@ const [showDatePicker, setShowDatePicker] = useState(false);
       setLoading(false);
     }
   };
-  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -109,7 +137,7 @@ const [showDatePicker, setShowDatePicker] = useState(false);
               onChangeText={setSearchQuery}
             />
           </View>
-          <Pressable style={styles.barcodeButton}>
+          <Pressable style={styles.barcodeButton} onPress={() => router.push('/scan')}>
             <Barcode size={24} color="#007AFF" />
           </Pressable>
         </View>
@@ -129,56 +157,65 @@ const [showDatePicker, setShowDatePicker] = useState(false);
             onChangeText={setMealCalories}
             keyboardType="numeric"
           />
+          <TextInput
+            style={styles.input}
+            placeholder="Protéines"
+            value={mealProtein}
+            onChangeText={setMealProtein}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Glucides"
+            value={mealCarbs}
+            onChangeText={setMealCarbs}
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Lipides"
+            value={mealFat}
+            onChangeText={setMealFat}
+            keyboardType="numeric"
+          />
           {/* Choix du type de repas */}
           <View style={styles.mealTypeContainer}>
             <Pressable
-              style={[
-                styles.mealTypeButton,
-                mealType === 'breakfast' && styles.mealTypeButtonSelected,
-              ]}
+              style={[styles.mealTypeButton, mealType === 'breakfast' && styles.mealTypeButtonSelected]}
               onPress={() => setMealType('breakfast')}
             >
               <Text style={styles.mealTypeText}>Petit déjeuner</Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.mealTypeButton,
-                mealType === 'lunch' && styles.mealTypeButtonSelected,
-              ]}
+              style={[styles.mealTypeButton, mealType === 'lunch' && styles.mealTypeButtonSelected]}
               onPress={() => setMealType('lunch')}
             >
               <Text style={styles.mealTypeText}>Déjeuner</Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.mealTypeButton,
-                mealType === 'dinner' && styles.mealTypeButtonSelected,
-              ]}
+              style={[styles.mealTypeButton, mealType === 'dinner' && styles.mealTypeButtonSelected]}
               onPress={() => setMealType('dinner')}
             >
               <Text style={styles.mealTypeText}>Dîner</Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.mealTypeButton,
-                mealType === 'snack' && styles.mealTypeButtonSelected,
-              ]}
+              style={[styles.mealTypeButton, mealType === 'snack' && styles.mealTypeButtonSelected]}
               onPress={() => setMealType('snack')}
             >
               <Text style={styles.mealTypeText}>La Collation</Text>
             </Pressable>
           </View>
-          <Pressable onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
+          <Pressable onPress={showDatePicker} style={styles.datePickerButton}>
   <Text style={styles.datePickerText}>Date : {format(mealDate, 'dd/MM/yyyy')}</Text>
-</Pressable>
-{showDatePicker && (
-  <DateTimePicker
-    value={mealDate}
-    mode="date"
-    display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
-    onChange={handleDateChange}
-  />
-)}
+</Pressable>     
+            <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            onConfirm={handleConfirm}
+            onCancel={hideDatePicker}
+          />
+          
+         
 
           <Pressable style={styles.saveButton} onPress={handleAddMeal}>
             <Text style={styles.saveButtonText}>Enregistrer le repas</Text>
@@ -193,10 +230,15 @@ const [showDatePicker, setShowDatePicker] = useState(false);
           {history.map((meal) => (
             <View key={meal.id} style={styles.historyItem}>
               <Text style={styles.historyName}>{meal.name}</Text>
+              <View style={styles.macroRow}>
+                <Text style={styles.macroText}>⚡ {meal.calories} cal</Text>
+                <Text style={styles.macroText}>🥩 {meal.protein}g</Text>
+                <Text style={styles.macroText}>🍞 {meal.carbs}g</Text>
+                <Text style={styles.macroText}>🧈 {meal.fat}g</Text>
+              </View>
               <Text style={styles.historyDetails}>
-  {meal.calories} cal - {meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1)} - {format(new Date(meal.created_at), 'dd/MM/yyyy')}
-</Text>
-
+                {meal.calories} cal - {meal.protein}g prot - {meal.carbs}g gluc - {meal.fat}g lip | {meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1)} - {format(new Date(meal.created_at), 'dd/MM/yyyy')}
+              </Text>
             </View>
           ))}
           {history.length === 0 && <Text style={styles.noHistory}>Aucun repas ajouté pour le moment.</Text>}
@@ -283,5 +325,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1C1C1E',
   },
+  macroRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 5 },
+macroText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#555' },
+
   
 });

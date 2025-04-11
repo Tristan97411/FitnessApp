@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { format, startOfWeek, endOfWeek, parseISO } from 'date-fns';
 import DateTimePicker from '@react-native-community/datetimepicker';  // Installer ce package si nécessaire
+import { startOfDay, endOfDay } from 'date-fns';
 
 type Meal = {
   id: string;
@@ -20,6 +21,8 @@ type Meal = {
   date?: string;
   created_at: string;
 };
+
+
 
 export default function DiaryScreen() {
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -59,18 +62,18 @@ export default function DiaryScreen() {
     }, [])
   );
 
-  // Filtrage des repas par date sélectionnée
   const filterMealsByDate = (date: Date) => {
-    const startOfSelectedDate = startOfWeek(date); // Début de la semaine
-    const endOfSelectedDate = endOfWeek(date); // Fin de la semaine
-
+    const start = startOfDay(date);
+    const end = endOfDay(date);
+  
     const filtered = meals.filter(meal => {
-      const mealDate = new Date(meal.created_at); // Convertir en Date
-      return mealDate >= startOfSelectedDate && mealDate <= endOfSelectedDate;
+      const mealDate = new Date(meal.created_at);
+      return mealDate >= start && mealDate <= end;
     });
-
+  
     setFilteredMeals(filtered);
   };
+  
 
   useEffect(() => {
     filterMealsByDate(selectedDate);

@@ -28,11 +28,16 @@ export default function HomeScreen() {
             return;
           }
       
-          // Si l'utilisateur est connecté, récupérer les repas
-          const { data, error: mealsError } = await supabase
-            .from('meals')
-            .select('calories, protein, carbs, fat')
-            .eq('user_id', user.id);
+          const start = startOfDay(new Date()).toISOString();
+const end = endOfDay(new Date()).toISOString();
+
+const { data, error: mealsError } = await supabase
+  .from('meals')
+  .select('calories, protein, carbs, fat, created_at')
+  .eq('user_id', user.id)
+  .gte('created_at', start)
+  .lte('created_at', end);
+
       
           if (mealsError) {
             console.error('Erreur dans la récupération des repas:', mealsError);

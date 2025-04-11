@@ -35,5 +35,6 @@ yarn-error.*
 
 # Ignore les fichiers contenant des informations sensibles
 *.env
-*.json
 *.secret
+*.env*.local
+

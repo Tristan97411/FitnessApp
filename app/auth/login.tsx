@@ -65,7 +65,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.formContainer}>
-        <Text style={styles.title}>MyFitnessPal</Text>
+        <Text style={styles.title}>FitnessApp</Text>
         <Text style={styles.subtitle}>Connectez-vous pour continuer</Text>
 
         {error && <Text style={styles.error}>{error}</Text>}

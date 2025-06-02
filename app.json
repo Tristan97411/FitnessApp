@@ -1,4 +1,15 @@
 {
-  "name": "new-bolt-app",
-  "slug": "new-bolt-app"
+  "expo": {
+    "name": "new-bolt-app",
+    "slug": "new-bolt-app",
+    "plugins": [
+      "expo-font",
+      "expo-web-browser"
+    ],
+    "sdkVersion": "52.0.0",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.saito97411.newboltapp"
+    }
+  }
 }

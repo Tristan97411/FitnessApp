@@ -44,13 +44,32 @@ const addWorkoutSession = async (workout: Workout) => {
 };
 
 const fetchSessions = async (): Promise<any[]> => {
-  const { data, error } = await supabase.from('workouts').select('*').order('created_at', { ascending: false });
+  // 👉 ici tu remplaces ce code :
+  // 👇 par CE NOUVEAU CODE
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    console.error('Erreur utilisateur:', userError);
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('workouts')
+    .select('*')
+    .eq('user_id', user.id) // 🔥 la ligne importante !
+    .order('created_at', { ascending: false });
+
   if (error) {
     console.error('Erreur récupération séances:', error);
     return [];
   }
+
   return data || [];
 };
+
+  
+
+  
+
 
 export const WorkoutSessionsScreen = () => {
   const router = useRouter();

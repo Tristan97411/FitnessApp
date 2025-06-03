@@ -61,7 +61,7 @@ export default function AddScreen() {
       setHistory(data || []);
     } catch (err) {
       console.error("Erreur lors de la récupération de l'historique", err);
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue !');
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue !!');
     } finally {
       setLoading(false);
     }

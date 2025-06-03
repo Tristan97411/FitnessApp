@@ -1,45 +1,66 @@
 import { render, screen, waitFor } from '@testing-library/react-native';
 import HomeScreen from '../app/(tabs)/index';
+import { NavigationContainer } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 
+// 💡 Mock Supabase
 jest.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
-      getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'test-user-id' } }, error: null }),  // Simuler un utilisateur connecté
+      getUser: jest.fn().mockResolvedValue({
+        data: { user: { id: 'test-user-id' } },
+        error: null,
+      }),
     },
     from: jest.fn(() => ({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      then: jest.fn().mockResolvedValue({
-        data: [
-          { calories: 360, carbs: 0, protein: 0, fat: 0 },
-          { calories: 360, carbs: 0, protein: 0, fat: 0 },
-        ],
-        error: null,
-      }),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+      then: jest.fn().mockImplementation((cb) =>
+        Promise.resolve(
+          cb({
+            data: [
+              {
+                calories: 500,
+                carbs: 50,
+                protein: 25,
+                fat: 10,
+              },
+              {
+                calories: 300,
+                carbs: 30,
+                protein: 10,
+                fat: 5,
+              },
+            ],
+            error: null,
+          })
+        )
+      ),
     })),
   },
 }));
 
 describe('HomeScreen', () => {
-  it('should display nutrition data correctly', async () => {
-    jest.setTimeout(15000); // 15 secondes pour Jenkins
-
+  it('affiche correctement les données nutritionnelles', async () => {
     render(
       <NavigationContainer>
         <HomeScreen />
       </NavigationContainer>
     );
 
-    // Attendre que l'élément 'Calories Consommées' soit rendu
-    const caloriesText = await screen.findByText('Calories Consommées');
-    expect(caloriesText).toBeTruthy();
+    // Attend que "Calories Consommées" soit visible
+    expect(await screen.findByText(/Calories Consommées/i)).toBeTruthy();
 
-    // Attendre et vérifier que les calories totales sont affichées correctement
-    const caloriesValue = await screen.findByText('0 cal');
-    expect(caloriesValue).toBeTruthy();
+    // Calories totales attendues : 500 + 300 = 800
+    expect(await screen.findByText('800 cal')).toBeTruthy();
+
+    // Détails nutritionnels
+    expect(await screen.findByText('800')).toBeTruthy(); // TotalCalories
+    expect(await screen.findByText('80 g')).toBeTruthy(); // Carbs
+    expect(await screen.findByText('35 g')).toBeTruthy(); // Protein
+    expect(await screen.findByText('15 g')).toBeTruthy(); // Fat
   });
 });
-

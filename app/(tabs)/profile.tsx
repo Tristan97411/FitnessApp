@@ -168,6 +168,25 @@ export default function ProfileScreen() {
             <Feather name="chevron-right" size={20} color="#8E8E93" />
           </Pressable>
         </View>
+        <View style={{ paddingHorizontal: 20, marginVertical: 30 }}>
+  <Pressable
+    onPress={async () => {
+      await supabase.auth.signOut();
+      router.replace('/login'); // replace() pour éviter retour arrière
+    }}
+    style={{
+      backgroundColor: '#FF3B30',
+      paddingVertical: 12,
+      borderRadius: 10,
+      alignItems: 'center',
+    }}
+  >
+    <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Inter_600SemiBold' }}>
+      Se déconnecter
+    </Text>
+  </Pressable>
+</View>
+
       </ScrollView>
     </SafeAreaView>
   );

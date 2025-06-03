@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Test') {
             steps {
                 script {
                     // Exécuter les tests unitaires avec npm

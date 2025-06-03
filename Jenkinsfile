@@ -52,10 +52,10 @@ pipeline {
     steps {
         script {
             bat 'npm run build:web'
-            bat 'npx serve dist'
         }
     }
 }
+
 
     }
 

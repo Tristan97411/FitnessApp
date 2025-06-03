@@ -49,14 +49,14 @@ pipeline {
         //}
 
         stage('Deploy to Production') {
-            steps {
-                script {
-                    // Déployer sur l'environnement de production uniquement si tout est OK
-                    // Exécuter uniquement si tous les tests sont réussis
-                    bat 'npm run dev'
-                }
-            }
+    steps {
+        script {
+            bat 'npm run build:web'
+            bat 'npx serve dist'
         }
+    }
+}
+
     }
 
     post {

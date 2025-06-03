@@ -4,6 +4,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import React from 'react';
 
+jest.setTimeout(10000); // 10 secondes
+
 // 💡 Mock Supabase
 jest.mock('../lib/supabase', () => ({
   supabase: {

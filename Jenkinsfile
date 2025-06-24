@@ -2,9 +2,11 @@ pipeline {
     agent any
 
     environment {
-        NODE_HOME = '/usr/local/bin/node' // Path to Node.js, change if needed
-        PATH = "${NODE_HOME}/bin:${env.PATH}"
-    }
+    NVM_HOME = 'C:\\Users\\Saito\\AppData\\Local\\nvm'
+    NODE_VERSION = '22.11.0'
+    PATH = "${NVM_HOME};${NVM_HOME}\\v${NODE_VERSION};${env.PATH}"
+}
+
 
     stages {
         stage('Clone Repository') {
@@ -14,23 +16,15 @@ pipeline {
             }
         }
 
-        stage('Utilisation de Node.js') {
-            steps {
-                script {
-                    // Installer les dépendances du projet avec npm
-                    bat 'nvm use 22.11.0'
-                }
-            }
-        }
+        
         stage('Install Dependencies') {
-            steps {
-                script {
-                    // Installer les dépendances du projet avec npm
-                    bat 'nvm use 22.11.0'
-                    bat 'npm install'
-                }
-            }
-        }
+    steps {
+        bat """
+            nvm use ${NODE_VERSION}
+            npm install
+        """
+    }
+}
 
         stage('Run Test') {
             steps {

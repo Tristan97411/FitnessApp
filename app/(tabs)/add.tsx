@@ -129,7 +129,7 @@ const handleConfirm = (date: Date) => {
       <ScrollView>
         {/* En-tête */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Ajouter un repa</Text>
+          <Text style={styles.headerTitle}>Ajouter un repas</Text>
         </View>
 
         {/* Barre de recherche (optionnelle) */}

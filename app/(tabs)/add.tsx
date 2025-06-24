@@ -118,7 +118,7 @@ const handleConfirm = (date: Date) => {
       fetchHistory(); // Met à jour l'historique des repas
       router.push('/diary'); // Redirige vers le journal après l'ajout
     } catch (err) {
-      console.error("Erreur lors de l'ajout du repas:", err);
+      console.error("Erreur lors de l'ajout du repa:", err);
     } finally {
       setLoading(false);
     }

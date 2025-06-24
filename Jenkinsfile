@@ -18,8 +18,6 @@ pipeline {
             steps {
                 script {
                     // Installer les dépendances du projet avec npm
-                    nvm use 22.11.0
-
                     bat 'npm install'
                 }
             }

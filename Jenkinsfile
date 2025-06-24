@@ -14,10 +14,19 @@ pipeline {
             }
         }
 
+        stage('Utilisation de Node.js') {
+            steps {
+                script {
+                    // Installer les dépendances du projet avec npm
+                    bat 'nvm use 22.11.0'
+                }
+            }
+        }
         stage('Install Dependencies') {
             steps {
                 script {
                     // Installer les dépendances du projet avec npm
+                    bat 'nvm use 22.11.0'
                     bat 'npm install'
                 }
             }

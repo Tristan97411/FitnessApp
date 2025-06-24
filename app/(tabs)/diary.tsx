@@ -5,9 +5,8 @@ import { ChevronRight } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { format, startOfWeek, endOfWeek, parseISO } from 'date-fns';
-import DateTimePicker from '@react-native-community/datetimepicker';  // Installer ce package si nécessaire
-import { startOfDay, endOfDay } from 'date-fns';
+import { format, startOfDay, endOfDay } from 'date-fns';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 type Meal = {
   id: string;
@@ -22,17 +21,14 @@ type Meal = {
   created_at: string;
 };
 
-
-
 export default function DiaryScreen() {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());  // Date initiale (aujourd'hui)
-  const [filteredMeals, setFilteredMeals] = useState<Meal[]>([]);  // Repas filtrés
-  const [showDatePicker, setShowDatePicker] = useState(false);  // Affichage du sélecteur de date
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [filteredMeals, setFilteredMeals] = useState<Meal[]>([]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Récupérer les repas depuis Supabase
   useFocusEffect(
     useCallback(() => {
       const fetchMeals = async () => {
@@ -42,7 +38,7 @@ export default function DiaryScreen() {
           const { data: { user }, error: authError } = await supabase.auth.getUser();
           if (authError) throw authError;
           if (!user) throw new Error("Aucun utilisateur connecté.");
-          
+
           const { data, error: mealsError } = await supabase
             .from('meals')
             .select('*')
@@ -65,30 +61,40 @@ export default function DiaryScreen() {
   const filterMealsByDate = (date: Date) => {
     const start = startOfDay(date);
     const end = endOfDay(date);
-  
+
     const filtered = meals.filter(meal => {
-      const mealDate = new Date(meal.created_at);
+      const mealDate = new Date(meal.date ?? meal.created_at);
       return mealDate >= start && mealDate <= end;
     });
-  
+
     setFilteredMeals(filtered);
   };
-  
 
   useEffect(() => {
     filterMealsByDate(selectedDate);
   }, [selectedDate, meals]);
 
-  // Calcul des calories totales de la journée
   const totalCaloriesToday = filteredMeals.reduce((sum, meal) => sum + meal.calories, 0);
 
   const mealTypes = ["breakfast", "lunch", "dinner", "snack"];
+
+  // Regroupement avec gestion des repas inconnus
   const groupedMeals = mealTypes.reduce((acc, type) => {
-    acc[type] = filteredMeals.filter(meal => meal.meal_type.toLowerCase() === type);
+    acc[type] = [];
     return acc;
   }, {} as { [key: string]: Meal[] });
 
-  // Fonction pour afficher le DatePicker
+  const unknownMeals: Meal[] = [];
+
+  filteredMeals.forEach(meal => {
+    const type = meal.meal_type?.toLowerCase().trim();
+    if (type && mealTypes.includes(type)) {
+      groupedMeals[type].push(meal);
+    } else {
+      unknownMeals.push(meal);
+    }
+  });
+
   const handleDateChange = (event: any, selectedDate: Date | undefined) => {
     if (selectedDate) {
       setSelectedDate(selectedDate);
@@ -119,12 +125,10 @@ export default function DiaryScreen() {
           <Text style={styles.headerTitle}>Food Diary</Text>
         </View>
 
-        {/* Affichage de la date sélectionnée */}
         <Pressable style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
           <Text style={styles.dateButtonText}>{format(selectedDate, 'dd/MM/yyyy')}</Text>
         </Pressable>
 
-        {/* Affichage du sélecteur de date */}
         {showDatePicker && (
           <DateTimePicker
             value={selectedDate}
@@ -134,7 +138,6 @@ export default function DiaryScreen() {
           />
         )}
 
-        {/* Total des calories du jour */}
         <View style={styles.totalCaloriesContainer}>
           <Text style={styles.totalCaloriesText}>Total du jour : {totalCaloriesToday} cal</Text>
         </View>
@@ -152,11 +155,23 @@ export default function DiaryScreen() {
               items={items.map(meal => ({
                 name: meal.name,
                 calories: meal.calories,
-                amount: meal.name 
-              }))} 
+                amount: meal.name
+              }))}
             />
           );
         })}
+
+        {unknownMeals.length > 0 && (
+          <MealSection
+            title="Recette Web"
+            calories={unknownMeals.reduce((sum, meal) => sum + meal.calories, 0)}
+            items={unknownMeals.map(meal => ({
+              name: meal.name,
+              calories: meal.calories,
+              amount: meal.name
+            }))}
+          />
+        )}
 
         <Pressable style={styles.addButton} onPress={() => router.push('/add')}>
           <Text style={styles.addButtonText}>Add Food</Text>
@@ -166,7 +181,6 @@ export default function DiaryScreen() {
   );
 }
 
-// Section pour afficher chaque type de repas
 function MealSection({
   title,
   calories,
@@ -184,7 +198,7 @@ function MealSection({
       </View>
 
       {items.map((item, index) => (
-        <Pressable key={index} style={styles.foodItem} onPress={() => {}}>
+        <Pressable key={index} style={styles.foodItem} onPress={() => { }}>
           <View>
             <Text style={styles.foodName}>{item.name}</Text>
             <Text style={styles.foodAmount}>{item.amount}</Text>
@@ -308,5 +322,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFFFFF',
   },
-  
+
 });

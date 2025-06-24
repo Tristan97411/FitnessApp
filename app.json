@@ -4,12 +4,33 @@
     "slug": "new-bolt-app",
     "plugins": [
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-barcode-scanner",
+      "expo-camera",
+      "expo-dev-client"
     ],
     "sdkVersion": "52.0.0",
     "newArchEnabled": true,
     "android": {
-      "package": "com.saito97411.newboltapp"
-    }
+      "package": "com.saito97411.newboltapp",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "supabaseUrl": "https://zwjigphwyljyjtsxkmds.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3amlncGh3eWxqeWp0c3hrbWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1NzY2NDUsImV4cCI6MjA1ODE1MjY0NX0.QY8NgUXgfZovXfvSALCLdXeN9lQX6AMEZMjvvJGe1fA",
+      "eas": {
+        "projectId": "daac63f8-8a83-4248-b479-77f3b67fe8c2"
+      }
+    },
+    "owner": "saito97411"
   }
 }

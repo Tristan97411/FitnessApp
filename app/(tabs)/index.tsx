@@ -6,6 +6,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase';
 import { startOfDay, endOfDay } from 'date-fns';
 import "expo-router/entry";
+import { useTheme } from '../../lib/ThemeContext';
+import { getColors } from '../../lib/theme-colors';
+import { ActivityIndicator } from 'react-native'; // Ajoute ce import en haut
 
 export default function HomeScreen() {
   const today = format(new Date(), 'EEEE, MMMM d');
@@ -18,6 +21,9 @@ export default function HomeScreen() {
 
   const [user, setUser] = useState<any>(null);  // Ajouté pour suivre l'état de l'utilisateur
   const [loading, setLoading] = useState(true); // Pour gérer l'état de chargement
+
+  const { theme } = useTheme();
+  const colors = getColors(theme);
 
   // Vérification de l'utilisateur au lancement
   useEffect(() => {
@@ -42,7 +48,10 @@ export default function HomeScreen() {
       }
 
       const fetchMealsData = async () => {
+        setLoading(true);
+
         try {
+          
           const start = startOfDay(new Date()).toISOString();
           const end = endOfDay(new Date()).toISOString();
 
@@ -71,8 +80,9 @@ export default function HomeScreen() {
             },
             { totalCalories: 0, totalCarbs: 0, totalProtein: 0, totalFat: 0 }
           );
-
           setNutritionData(totals);
+          setLoading(false);
+
         } catch (err) {
           console.error('Erreur lors de la récupération des repas', err);
         }
@@ -85,38 +95,43 @@ export default function HomeScreen() {
   const { totalCalories, totalCarbs, totalProtein, totalFat } = nutritionData;
 
   if (loading) {
-    return <Text>Chargement...</Text>; // Affiche un message ou un loader pendant la récupération des données
+    return (
+      <SafeAreaView style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={{ marginTop: 10, color: colors.text }}>Chargement...</Text>
+      </SafeAreaView>
+    );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }] }>
       <ScrollView>
-        <View style={styles.header}>
-          <Text style={styles.date}>{today}</Text>
-          <Text style={styles.title}>Calories Consommées</Text>
-          <Text style={styles.calories}>{totalCalories} cal</Text>
+        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }] }>
+          <Text style={[styles.date, { color: colors.subtext }]}>{today}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Calories Consommées</Text>
+          <Text style={[styles.calories, { color: colors.accent }]}>{totalCalories} cal</Text>
           <View style={styles.calorieBreakdown}>
             <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownValue}>{totalCalories}</Text>
-              <Text style={styles.breakdownLabel}>Calories</Text>
+              <Text style={[styles.breakdownValue, { color: colors.text }]}>{totalCalories}</Text>
+              <Text style={[styles.breakdownLabel, { color: colors.subtext }]}>Calories</Text>
             </View>
             <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownValue}>{totalCarbs} g</Text>
-              <Text style={styles.breakdownLabel}>Glucides</Text>
+              <Text style={[styles.breakdownValue, { color: colors.text }]}>{totalCarbs} g</Text>
+              <Text style={[styles.breakdownLabel, { color: colors.subtext }]}>Glucides</Text>
             </View>
             <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownValue}>{totalProtein} g</Text>
-              <Text style={styles.breakdownLabel}>Protéines</Text>
+              <Text style={[styles.breakdownValue, { color: colors.text }]}>{totalProtein} g</Text>
+              <Text style={[styles.breakdownLabel, { color: colors.subtext }]}>Protéines</Text>
             </View>
             <View style={styles.breakdownItem}>
-              <Text style={styles.breakdownValue}>{totalFat} g</Text>
-              <Text style={styles.breakdownLabel}>Lipides</Text>
+              <Text style={[styles.breakdownValue, { color: colors.text }]}>{totalFat} g</Text>
+              <Text style={[styles.breakdownLabel, { color: colors.subtext }]}>Lipides</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Objectifs Nutritionnels</Text>
+        <View style={[styles.section, { backgroundColor: colors.card }] }>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Objectifs Nutritionnels</Text>
           <View style={styles.nutritionGoals}>
             <NutritionGoal label="Glucides" current={totalCarbs} goal={250} unit="g" />
             <NutritionGoal label="Protéines" current={totalProtein} goal={150} unit="g" />
@@ -234,4 +249,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#8E8E93',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
 });

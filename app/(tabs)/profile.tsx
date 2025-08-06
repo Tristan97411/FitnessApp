@@ -1,18 +1,27 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Image, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Image,
+  ActivityIndicator,
+  Switch,
+  Platform,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
-import { router } from 'expo-router';
-import {useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { 
-  MaterialIcons, 
-  FontAwesome5, 
-  MaterialCommunityIcons,
-  Feather, 
-  Ionicons 
-} from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { decode as atob } from 'base-64';
 
+import { Ionicons, MaterialIcons, FontAwesome5, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { useTheme } from '../../lib/ThemeContext';
+import { getColors } from '../../lib/theme-colors';
+import { Buffer } from 'buffer'; // Ajoute cette ligne en haut du fichier (npm install buffer si besoin)
 
 type Profile = {
   id: string;
@@ -22,123 +31,185 @@ type Profile = {
   current_weight: number | null;
   height: number | null;
   daily_calorie_goal: number | null;
-  created_at: string;
-  updated_at: string;
+  avatar_url?: string | null;
 };
 
 export default function ProfileScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  // Récupération des données de l'utilisateur connecté
+  const { theme, setTheme } = useTheme();
+  const colors = getColors(theme);
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw authError ?? new Error('Utilisateur non connecté');
+
+      const { data, error: dbError } = await supabase.from('users').select('*').eq('id', user.id).single();
+      if (dbError) throw dbError;
+
+      setProfile(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError) throw authError;
-        if (!user) throw new Error("Aucun utilisateur connecté.");
-
-        const { data, error: dbError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (dbError) throw dbError;
-        setProfile(data);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Une erreur est survenue');
-        } finally {
-          setLoading(false);
-        }
-    };
-
     fetchProfile();
   }, []);
 
+
+
+  const handlePickImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission refusée', 'Autorisez l\'accès à la galerie.');
+        return;
+      }
+  
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+  
+      if (pickerResult.canceled) return;
+  
+      const file = pickerResult.assets[0];
+      if (!file?.uri) throw new Error("Image non valide");
+  
+      setUploading(true);
+  
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user?.id) throw new Error("Utilisateur non connecté");
+  
+      const filePath = `${user.id}/${Date.now()}.jpg`;
+  
+      const base64 = await FileSystem.readAsStringAsync(file.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+  
+      const byteArray = Uint8Array.from(Buffer.from(base64, 'base64'));
+  
+      const { error: uploadError } = await supabase
+        .storage
+        .from('avatars')
+        .upload(filePath, byteArray, {
+          contentType: 'image/jpeg',
+          upsert: true,
+        });
+  
+      if (uploadError) throw uploadError;
+  
+      const { data: publicUrlData } = supabase
+        .storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+  
+      const avatar_url = publicUrlData?.publicUrl;
+      if (!avatar_url) throw new Error("Impossible d'obtenir l'URL publique");
+  
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ avatar_url })
+        .eq('id', user.id);
+  
+      if (updateError) throw updateError;
+  
+      setProfile(prev => prev ? { ...prev, avatar_url } : prev);
+  
+    } catch (err) {
+      console.error('Upload error:', err);
+      Alert.alert('Erreur', err instanceof Error ? err.message : 'Erreur inattendue');
+    } finally {
+      setUploading(false);
+    }
+  };
+  
+  
+  
+
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <SafeAreaView style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={{ marginTop: 10, color: colors.text }}>Chargement...</Text>
       </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.error}>{error}</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.error, { color: colors.error }]}>{error}</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView>
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <View style={styles.headerTop}>
-            <Text style={styles.headerTitle}>Profile</Text>
-            {/* On ajoute onPress pour naviguer vers EditProfileScreen */}
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Profil</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name={theme === 'dark' ? 'moon' : 'sunny'} size={22} color={colors.accent} />
+              <Switch
+                value={theme === 'dark'}
+                onValueChange={(v) => setTheme(v ? 'dark' : 'light')}
+                thumbColor={Platform.OS === 'android' ? colors.accent : undefined}
+                trackColor={{ false: '#ccc', true: colors.accent }}
+              />
+            </View>
             <Pressable onPress={() => router.push('/EditProfileScreen')}>
-<MaterialIcons name="settings" size={24} color="#007AFF" />
+              <MaterialIcons name="settings" size={24} color={colors.accent} />
             </Pressable>
           </View>
-          
+
           <View style={styles.profile}>
-            <Image
-              source={{ uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60' }}
-              style={styles.profileImage}
-            />
-            <Text style={styles.profileName}>{profile?.username || 'Utilisateur'}</Text>
-            <Text style={styles.profileStats}>
-              {profile?.current_weight ? `Current Weight: ${profile.current_weight} lbs` : 'Pas de donnée de poids'} • 
-              {profile?.daily_calorie_goal ? ` Daily Calorie Goal: ${profile.daily_calorie_goal}` : ''}
+            <Pressable onPress={handlePickImage} style={{ position: 'relative' }}>
+              <Image
+                source={{
+                  uri: profile?.avatar_url || 'https://placehold.co/110x110',
+                }}
+                style={styles.profileImage}
+              />
+              <View style={styles.cameraIcon}>
+                <MaterialIcons name="photo-camera" size={18} color="#fff" />
+              </View>
+              {uploading && (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.accent}
+                  style={StyleSheet.absoluteFill}
+                />
+              )}
+            </Pressable>
+            <Text style={[styles.profileName, { color: colors.text }]}>{profile?.username || 'Utilisateur'}</Text>
+            <Text style={[styles.profileStats, { color: colors.subtext }]}>
+              {profile?.current_weight ? `Poids actuel : ${profile.current_weight} lbs` : 'Pas de donnée de poids'}
+              {' • '}
+              {profile?.daily_calorie_goal ? `Objectif calories : ${profile.daily_calorie_goal}` : ''}
             </Text>
           </View>
         </View>
-
-        {/* Reste de la page... */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Goals</Text>
-          <View style={styles.goals}>
-            <View style={styles.goalItem}>
-              <FontAwesome5 name="bullseye" size={24} color="#007AFF" />
-              <View style={styles.goalInfo}>
-                <Text style={styles.goalTitle}>Weight Goal</Text>
-                <Text style={styles.goalValue}>
-                  {profile?.weight_goal ? `${profile.weight_goal} lbs` : 'Non défini'}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.goalItem}>
-              <MaterialCommunityIcons name="scale-bathroom"  size={24} color="#FF9500" />
-              <View style={styles.goalInfo}>
-                <Text style={styles.goalTitle}>Current Weight</Text>
-                <Text style={styles.goalValue}>
-                  {profile?.current_weight ? `${profile.current_weight} lbs` : 'Non défini'}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.goalItem}>
-              <MaterialIcons name="trending-up" size={24} color="#34C759" />
-              <View style={styles.goalInfo}>
-                <Text style={styles.goalTitle}>Weekly Goal</Text>
-                <Text style={styles.goalValue}>-1 lb/week</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Achievements</Text>
+        <View style={[styles.section, { backgroundColor: colors.section }] }>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Achievements</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.achievements}>
             <Achievement
               title="First Week"
               description="Completed your first week"
-              color="#007AFF"
+              color={colors.accent}
             />
             <Achievement
               title="5lb Milestone"
@@ -152,41 +223,39 @@ export default function ProfileScreen() {
             />
           </ScrollView>
         </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Progress</Text>
+        <View style={[styles.section, { backgroundColor: colors.section }] }>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Progress</Text>
           <Pressable style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Weight History</Text>
-            <Feather name="chevron-right" size={20} color="#8E8E93" />
+            <Text style={[styles.menuItemText, { color: colors.text }]}>Weight History</Text>
+            <Feather name="chevron-right" size={20} color={colors.subtext} />
           </Pressable>
           <Pressable style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Measurements</Text>
-            <Feather name="chevron-right" size={20} color="#8E8E93" />
+            <Text style={[styles.menuItemText, { color: colors.text }]}>Measurements</Text>
+            <Feather name="chevron-right" size={20} color={colors.subtext} />
           </Pressable>
           <Pressable style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Progress Photos</Text>
-            <Feather name="chevron-right" size={20} color="#8E8E93" />
+            <Text style={[styles.menuItemText, { color: colors.text }]}>Progress Photos</Text>
+            <Feather name="chevron-right" size={20} color={colors.subtext} />
           </Pressable>
         </View>
         <View style={{ paddingHorizontal: 20, marginVertical: 30 }}>
-  <Pressable
-    onPress={async () => {
-      await supabase.auth.signOut();
-      router.replace('/login'); // replace() pour éviter retour arrière
-    }}
-    style={{
-      backgroundColor: '#FF3B30',
-      paddingVertical: 12,
-      borderRadius: 10,
-      alignItems: 'center',
-    }}
-  >
-    <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Inter_600SemiBold' }}>
-      Se déconnecter
-    </Text>
-  </Pressable>
-</View>
-
+          <Pressable
+            onPress={async () => {
+              await supabase.auth.signOut();
+              router.replace('/login'); // replace() pour éviter retour arrière
+            }}
+            style={{
+              backgroundColor: colors.error,
+              paddingVertical: 12,
+              borderRadius: 10,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Inter_600SemiBold' }}>
+              Se déconnecter
+            </Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -194,7 +263,7 @@ export default function ProfileScreen() {
 
 function Achievement({ title, description, color }: { title: string; description: string; color: string }) {
   return (
-    <View style={[styles.achievement, { borderColor: color }]}>
+    <View style={[styles.achievement, { borderColor: color }]}> 
       <FontAwesome5 name="award" size={24} color={color} />
       <Text style={styles.achievementTitle}>{title}</Text>
       <Text style={styles.achievementDescription}>{description}</Text>
@@ -321,5 +390,14 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
     textAlign: 'center',
     marginTop: 20,
+  },
+  cameraIcon: {
+    position: 'absolute', bottom: 0, right: 0,
+    backgroundColor: '#007aff', borderRadius: 20, padding: 4
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

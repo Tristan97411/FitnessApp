@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, Alert, useColorScheme } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { Tables } from '../../lib/supabase';
+import { useTheme } from '../../lib/ThemeContext';
+import { getColors } from '../../lib/theme-colors';
 
 type WorkoutExercise = Tables['workout_exercises']['Row'];
 
@@ -11,8 +13,8 @@ interface ExerciseItemProps {
 }
 
 export const ExerciseItem = ({ exercise, onEdit, onDelete }: ExerciseItemProps) => {
-  const isDarkMode = useColorScheme() === 'dark';
-
+  const { theme } = useTheme();
+  const colors = getColors(theme);
   const confirmDelete = () => {
     Alert.alert(
       'Supprimer',
@@ -27,18 +29,17 @@ export const ExerciseItem = ({ exercise, onEdit, onDelete }: ExerciseItemProps) 
       ]
     );
   };
-
   return (
-    <View style={[styles.container, { backgroundColor: isDarkMode ? '#1c1c1e' : '#f5f5f7' }]}>
-      <Text style={[styles.name, { color: isDarkMode ? '#fff' : '#333' }]}>{exercise.name}</Text>
-      <Text style={{ color: isDarkMode ? '#ddd' : '#555' }}>
+    <View style={[styles.container, { backgroundColor: colors.card, shadowColor: colors.shadow }] }>
+      <Text style={[styles.name, { color: colors.text }]}>{exercise.name}</Text>
+      <Text style={{ color: colors.subtext }}>
         {exercise.series} x {exercise.repetitions} reps • {exercise.rest_time_seconds}s repos
       </Text>
-      {exercise.weight && <Text style={{ color: isDarkMode ? '#ddd' : '#555' }}>Poids : {exercise.weight} kg</Text>}
-      {exercise.notes && <Text style={{ color: isDarkMode ? '#ddd' : '#555' }}>Note : {exercise.notes}</Text>}
+      {exercise.weight && <Text style={{ color: colors.subtext }}>Poids : {exercise.weight} kg</Text>}
+      {exercise.notes && <Text style={{ color: colors.subtext }}>Note : {exercise.notes}</Text>}
       <View style={styles.actions}>
-        <Button title="✏️" onPress={onEdit} color="#007bff" />
-        <Button title="🗑️" onPress={confirmDelete} color="#dc3545" />
+        <Button title="✏️" onPress={onEdit} color={colors.accent} />
+        <Button title="🗑️" onPress={confirmDelete} color={colors.error} />
       </View>
     </View>
   );

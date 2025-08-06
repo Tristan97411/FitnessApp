@@ -2,14 +2,8 @@
   "expo": {
     "name": "new-bolt-app",
     "slug": "new-bolt-app",
-    "plugins": [
-      "expo-font",
-      "expo-web-browser",
-      "expo-barcode-scanner",
-      "expo-camera",
-      "expo-dev-client"
-    ],
-    "sdkVersion": "52.0.0",
+    "plugins": ["expo-font", "expo-camera", "expo-dev-client", "expo-router"],
+    "sdkVersion": "53.0.0",
     "newArchEnabled": true,
     "android": {
       "package": "com.saito97411.newboltapp",

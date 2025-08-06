@@ -2,12 +2,17 @@ import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { useTheme } from '../../lib/ThemeContext';
+import { getColors } from '../../lib/theme-colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { theme } = useTheme();
+  const colors = getColors(theme);
 
   const handleLogin = async () => {
     try {
@@ -63,46 +68,43 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>FitnessApp</Text>
-        <Text style={styles.subtitle}>Connectez-vous pour continuer</Text>
-
-        {error && <Text style={styles.error}>{error}</Text>}
-
+    <View style={[styles.container, { backgroundColor: colors.background }] }>
+      <View style={[styles.formContainer, { backgroundColor: colors.card, shadowColor: colors.shadow }] }>
+        <Text style={[styles.title, { color: colors.accent }]}>FitnessApp</Text>
+        <Text style={[styles.subtitle, { color: colors.subtext }]}>Connectez-vous pour continuer</Text>
+        {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.input, color: colors.inputText }]}
           placeholder="Email"
+          placeholderTextColor={colors.placeholder}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
         />
-
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.input, color: colors.inputText }]}
           placeholder="Mot de passe"
+          placeholderTextColor={colors.placeholder}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
-
         <Pressable 
-          style={[styles.button, loading && styles.buttonDisabled]} 
+          style={[styles.button, { backgroundColor: colors.button }, loading && styles.buttonDisabled]} 
           onPress={handleLogin}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>
+          <Text style={[styles.buttonText, { color: colors.buttonText }]}>
             {loading ? 'Chargement...' : 'Se connecter'}
           </Text>
         </Pressable>
-
         <Pressable 
-          style={[styles.button, styles.signUpButton, loading && styles.buttonDisabled]} 
+          style={[styles.button, styles.signUpButton, { backgroundColor: colors.card, borderColor: colors.accent }, loading && styles.buttonDisabled]} 
           onPress={handleSignUp}
           disabled={loading}
         >
-          <Text style={[styles.buttonText, styles.signUpButtonText]}>
+          <Text style={[styles.buttonText, styles.signUpButtonText, { color: colors.accent }]}>
             {loading ? 'Chargement...' : "S'inscrire"}
           </Text>
         </Pressable>

@@ -2,14 +2,19 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { Ionicons, Feather, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import { useTheme } from '../../lib/ThemeContext';
+import { getColors } from '../../lib/theme-colors';
 
 export default function TabLayout() {
+  const { theme } = useTheme();
+  const colors = getColors(theme);
+
   return (
     <Tabs
       screenOptions={{
-        tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarStyle: [styles.tabBar, { backgroundColor: colors.card, borderTopColor: colors.border }],
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.subtext,
         headerShown: false,
       }}>
       <Tabs.Screen
@@ -31,8 +36,8 @@ export default function TabLayout() {
         options={{
           title: 'Add',
           tabBarIcon: ({ color }) => (
-            <View style={styles.addButton}>
-              <Ionicons name="add" size={24} color="#FFFFFF" />
+            <View style={[styles.addButton, { backgroundColor: colors.accent }] }>
+              <Ionicons name="add" size={24} color={colors.buttonText} />
             </View>
           ),
         }}
@@ -58,13 +63,13 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
+    // borderTopColor: '#E5E5EA', // remplacé dynamiquement
     height: 85,
     paddingBottom: 30,
     paddingTop: 10,
   },
   addButton: {
-    backgroundColor: '#007AFF',
+    // backgroundColor: '#007AFF', // remplacé dynamiquement
     width: 44,
     height: 44,
     borderRadius: 22,

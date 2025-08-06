@@ -7,6 +7,8 @@ import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from '../../lib/ThemeContext';
+import { getColors } from '../../lib/theme-colors';
 
 type Meal = {
   id: string;
@@ -28,6 +30,8 @@ export default function DiaryScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filteredMeals, setFilteredMeals] = useState<Meal[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const { theme } = useTheme();
+  const colors = getColors(theme);
 
   useFocusEffect(
     useCallback(() => {
@@ -104,29 +108,30 @@ export default function DiaryScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <SafeAreaView style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={{ marginTop: 10, color: colors.text }}>Chargement...</Text>
       </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.error}>{error}</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }] }>
+        <Text style={[styles.error, { color: colors.error }]}>{error}</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }] }>
       <ScrollView>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Food Diary</Text>
+        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }] }>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Food Diary</Text>
         </View>
 
-        <Pressable style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
-          <Text style={styles.dateButtonText}>{format(selectedDate, 'dd/MM/yyyy')}</Text>
+        <Pressable style={[styles.dateButton, { backgroundColor: colors.button }]} onPress={() => setShowDatePicker(true)}>
+          <Text style={[styles.dateButtonText, { color: colors.buttonText }]}>{format(selectedDate, 'dd/MM/yyyy')}</Text>
         </Pressable>
 
         {showDatePicker && (
@@ -138,8 +143,8 @@ export default function DiaryScreen() {
           />
         )}
 
-        <View style={styles.totalCaloriesContainer}>
-          <Text style={styles.totalCaloriesText}>Total du jour : {totalCaloriesToday} cal</Text>
+        <View style={[styles.totalCaloriesContainer, { backgroundColor: colors.card }] }>
+          <Text style={[styles.totalCaloriesText, { color: colors.text }]}>Total du jour : {totalCaloriesToday} cal</Text>
         </View>
 
         {mealTypes.map((type) => {
@@ -173,8 +178,8 @@ export default function DiaryScreen() {
           />
         )}
 
-        <Pressable style={styles.addButton} onPress={() => router.push('/add')}>
-          <Text style={styles.addButtonText}>Add Food</Text>
+        <Pressable style={[styles.addButton, { backgroundColor: colors.button }]} onPress={() => router.push('/add')}>
+          <Text style={[styles.addButtonText, { color: colors.buttonText }]}>Add Food</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -321,6 +326,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 18,
     color: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
 });

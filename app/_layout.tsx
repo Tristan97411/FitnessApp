@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-  import { useFrameworkReady } from '../hooks/useFrameworkReady';
+import { useFrameworkReady } from '../hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { supabase } from '../lib/supabase';
 import { Session } from '@supabase/supabase-js';
 import { create } from 'zustand';
+import { ThemeProvider } from '../lib/ThemeContext';
 
 interface AuthStore {
   session: Session | null;
@@ -56,9 +57,9 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <ThemeProvider>
       <Slot />
       <StatusBar style="auto" />
-    </>
+    </ThemeProvider>
   );
 }

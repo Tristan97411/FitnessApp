@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Text, StyleSheet, SafeAreaView, ScrollView, Pressable,   TouchableOpacity,
-  Modal, FlatList
+  Modal, FlatList, KeyboardAvoidingView, Platform 
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
@@ -9,6 +9,7 @@ import { ChevronLeft, Dumbbell, PlusCircle } from 'lucide-react-native';
 import { useTheme } from '../../../lib/ThemeContext';
 import { getColors } from '../../../lib/theme-colors';
 import Animated, { FadeInDown, FadeOutUp, Layout } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 const AddExerciseScreen = () => {
@@ -88,6 +89,7 @@ const AddExerciseScreen = () => {
   
   const { theme } = useTheme();
   const colors = getColors(theme);
+  const insets = useSafeAreaInsets();
 
   const predefinedExercises = {
     PUSH: ['Machine pec classique','Développé couché incliné','Developpé couche incline haltères','Smith machine devlp incline','Développé couché', 'Développé couché haltères' , 'Dips',],
@@ -434,8 +436,11 @@ const ModalPicker = ({ visible, onClose, onSelect }) => {
 };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+<SafeAreaView style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+<KeyboardAvoidingView
+  behavior={Platform.OS === 'android' ? 'padding' : undefined}
+  style={{ flex: 1 }}
+>  <ScrollView showsVerticalScrollIndicator={false}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.input }]}>
             {/* <ChevronLeft size={24} color={colors.accent} /> */}
@@ -565,6 +570,8 @@ const ModalPicker = ({ visible, onClose, onSelect }) => {
           </Pressable>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
+
     </SafeAreaView>
   );
 };
